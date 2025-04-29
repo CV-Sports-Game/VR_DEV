@@ -2,7 +2,7 @@ import cv2
 import os
 
 # Load the video
-video_path = "fencing.mp4"  # Change this to your file name
+video_path = "frame/thrust.mp4"  # Change this to your file name
 output_folder = "frames"
 
 # Create output folder if it doesn't exist

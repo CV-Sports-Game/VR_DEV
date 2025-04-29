@@ -3,7 +3,7 @@ import os
 import numpy as np
 import mediapipe as mp
 
-video_path = "fencing.mp4"
+video_path = "frame/thrust.mp4"
 output_dir = "pose_data"
 os.makedirs(output_dir, exist_ok=True)
 
