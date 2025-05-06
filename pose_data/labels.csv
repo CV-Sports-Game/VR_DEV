@@ -1,0 +1,7 @@
+filename,label
+roll_pose.npy,roll
+slash_pose.npy,slash
+block1_pose.npy,block1
+forward_pose.npy,forward
+thrust_pose.npy,thrust
+jump_pose.npy,jump
