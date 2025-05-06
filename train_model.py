@@ -6,7 +6,7 @@ from pose_dataset import PoseSequenceDataset
 from pose_transformer import PoseTransformer
 
 # Params
-sequence_len = 30
+sequence_len = 10
 batch_size = 32
 num_classes = 3
 epochs = 10
