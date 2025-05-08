@@ -7,10 +7,10 @@ from pose_dataset import PoseSequenceDataset
 from pose_transformer import PoseTransformer
 
 # Params
-sequence_len = 10
+sequence_len = 40
 batch_size = 32
 num_classes = 3
-epochs = 10
+epochs = 50
 
 pose_dir = "pose_data"
 label_file = os.path.join(pose_dir, "labels.csv")
@@ -35,6 +35,15 @@ model = PoseTransformer(input_dim=99, model_dim=128, num_classes=num_classes, se
 #model = PoseTransformer(input_dim=99, model_dim=128, num_classes=num_classes, seq_len=sequence_len)
 optimizer = optim.Adam(model.parameters(), lr=1e-3)
 criterion = nn.CrossEntropyLoss()
+
+from collections import Counter
+# Reverse the mapping: index -> name
+reverse_map = {v: k for k, v in dataset.label_map.items()}
+label_names = [reverse_map[label] for label in dataset.labels]
+counts = Counter(label_names)
+print("Label distribution:", counts)
+
+
 
 # Training loop
 for epoch in range(epochs):
