@@ -158,3 +158,8 @@ run sequence
 8. video.py and viualize
 9. pose_transformer
 
+May need to download 
+1. pytorch
+
+2. 
+
