@@ -161,5 +161,5 @@ run sequence
 May need to download 
 1. pytorch
 
-2. 
+2. other dependencies
 
