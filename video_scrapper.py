@@ -14,7 +14,7 @@ class SportsVideoScraper:
         self.output_dir = output_dir
         os.makedirs(output_dir, exist_ok=True)
         
-        # yt-dlp options for high-quality video download
+        # yt-dlp options for high-quality, short video download
         self.ydl_opts = {
             "format": "best[height<=720][ext=mp4]",  # 720p max for reasonable file size
             "outtmpl": os.path.join(output_dir, "%(title).40s.%(ext)s"),
@@ -26,30 +26,71 @@ class SportsVideoScraper:
             "no_warnings": False,
             "extractaudio": False,
             "audioformat": "mp3",
+            # Filter for shorter videos (better for technique analysis)
+            "match_filter": "duration < 180",  # Only videos under 3 minutes
         }
         
-        # Sports technique search queries
+        # Sports technique search queries - optimized for short, focused videos
         self.search_queries = {
-            # Boxing techniques
-            "boxing_jab": "boxing jab technique tutorial",
-            "boxing_cross": "boxing cross punch technique",
-            "boxing_hook": "boxing hook punch tutorial",
-            "boxing_uppercut": "boxing uppercut technique",
-            "boxing_defense": "boxing defense techniques",
-            "boxing_footwork": "boxing footwork drills",
+            # Boxing techniques - short tutorial focus
+            "boxing_jab": "boxing jab technique tutorial short",
+            "boxing_cross": "boxing cross punch tutorial short",
+            "boxing_hook": "boxing hook punch tutorial short",
+            "boxing_uppercut": "boxing uppercut tutorial short",
+            "boxing_defense": "boxing defense tutorial short",
+            "boxing_footwork": "boxing footwork tutorial short",
             
-            # Fencing techniques
-            "fencing_lunge": "fencing lunge technique tutorial",
-            "fencing_parry": "fencing parry defense",
-            "fencing_riposte": "fencing riposte attack",
-            "fencing_footwork": "fencing footwork drills",
-            "fencing_guard": "fencing guard position",
-            "fencing_attack": "fencing attack techniques",
+            # Fencing techniques - short tutorial focus
+            "fencing_lunge": "fencing lunge tutorial short",
+            "fencing_parry": "fencing parry tutorial short",
+            "fencing_riposte": "fencing riposte tutorial short",
+            "fencing_footwork": "fencing footwork tutorial short",
+            "fencing_guard": "fencing guard tutorial short",
+            "fencing_attack": "fencing attack tutorial short",
         }
+    
+    def check_video_quality(self, video_info: dict) -> tuple[bool, str]:
+        """
+        Check if video meets quality criteria
+        
+        Args:
+            video_info: Video information from yt-dlp
+            
+        Returns:
+            Tuple of (is_good_quality, reason)
+        """
+        try:
+            # Check duration (prefer short videos)
+            duration = video_info.get('duration', 0)
+            if duration > 180:  # Longer than 3 minutes
+                return False, f"Too long ({duration}s)"
+            if duration < 10:  # Too short
+                return False, f"Too short ({duration}s)"
+            
+            # Check resolution
+            height = video_info.get('height', 0)
+            if height < 360:  # Too low resolution
+                return False, f"Low resolution ({height}p)"
+            
+            # Check view count (prefer popular videos)
+            view_count = video_info.get('view_count', 0)
+            if view_count < 1000:  # Too few views
+                return False, f"Low views ({view_count})"
+            
+            # Check title relevance
+            title = video_info.get('title', '').lower()
+            relevant_keywords = ['tutorial', 'technique', 'how to', 'training', 'drill']
+            if not any(keyword in title for keyword in relevant_keywords):
+                return False, "Title not relevant"
+            
+            return True, "Good quality"
+            
+        except Exception as e:
+            return False, f"Quality check error: {e}"
     
     def search_and_download_videos(self, query: str, label: str, max_videos: int = 3):
         """
-        Search for videos and download them
+        Search for videos and download them with quality filtering
         
         Args:
             query: Search query for YouTube
@@ -59,23 +100,45 @@ class SportsVideoScraper:
         print(f"🔍 Searching for '{query}' (label: {label})...")
         
         labeled_entries = []
+        attempts = 0
+        max_attempts = max_videos * 3  # Try more videos to find good ones
         
         try:
             with yt_dlp.YoutubeDL(self.ydl_opts) as ydl:
-                # Search for videos
-                search_query = f"ytsearch{max_videos}:{query}"
-                result = ydl.extract_info(search_query, download=True)
+                # Search for more videos to filter
+                search_query = f"ytsearch{max_attempts}:{query}"
+                result = ydl.extract_info(search_query, download=False)  # Don't download yet
                 
                 if result and 'entries' in result:
                     for entry in result['entries']:
-                        if entry:
-                            video_title = entry.get('title', 'video').replace(" ", "_").replace("/", "_")
-                            filename = f"{video_title[:40]}.mp4"
-                            labeled_entries.append((filename, label))
-                            print(f"  ✅ Downloaded: {filename}")
+                        if entry and attempts < max_attempts:
+                            attempts += 1
+                            
+                            # Check video quality
+                            is_good_quality, reason = self.check_video_quality(entry)
+                            
+                            if is_good_quality:
+                                print(f"  [{attempts}] ✅ Good quality: {entry.get('title', 'Unknown')}")
+                                
+                                # Now download the good quality video
+                                try:
+                                    ydl.download([entry['webpage_url']])
+                                    
+                                    video_title = entry.get('title', 'video').replace(" ", "_").replace("/", "_")
+                                    filename = f"{video_title[:40]}.mp4"
+                                    labeled_entries.append((filename, label))
+                                    print(f"  ✅ Downloaded: {filename}")
+                                    
+                                    if len(labeled_entries) >= max_videos:
+                                        break
+                                        
+                                except Exception as e:
+                                    print(f"  ❌ Download failed: {e}")
+                            else:
+                                print(f"  [{attempts}] ❌ Skipped: {reason}")
                 
         except Exception as e:
-            print(f"⚠️ Error downloading for label '{label}': {e}")
+            print(f"⚠️ Error searching for label '{label}': {e}")
         
         return labeled_entries
     
@@ -144,13 +207,16 @@ def main():
     """Main function to run the video scraper"""
     scraper = SportsVideoScraper()
     
-    # Scrape videos for all techniques
-    labeled_videos = scraper.scrape_all_sports_videos(max_videos_per_technique=2)
+    # Scrape videos for all techniques (fewer but higher quality)
+    labeled_videos = scraper.scrape_all_sports_videos(max_videos_per_technique=1)
     
     # Print summary
     print("\n📋 Summary of downloaded videos:")
     for filename, label in labeled_videos:
         print(f"  {label}: {filename}")
+    
+    print(f"\n🎯 Total high-quality videos: {len(labeled_videos)}")
+    print("💡 These short, focused videos are perfect for AI analysis!")
 
 if __name__ == "__main__":
     main() 
