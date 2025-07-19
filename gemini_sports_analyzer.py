@@ -92,6 +92,93 @@ class GeminiSportsAnalyzer:
         }
         """
     
+    def _get_fencing_analysis_prompt(self) -> str:
+        """Get fencing-specific analysis prompt"""
+        return """
+        You are an expert fencing coach and biomechanics specialist. Analyze this fencing image and provide detailed feedback on:
+
+        1. **Technique Identification**: Identify the specific fencing technique (lunge, parry, riposte, etc.)
+        2. **Form Assessment**: Evaluate proper fencing stance, guard position, and execution
+        3. **Distance Management**: Analyze proper distance and timing
+        4. **Weapon Control**: Assess blade position and control
+        5. **Footwork**: Evaluate foot positioning and movement
+        6. **Tactical Analysis**: Assess strategic positioning and readiness
+        7. **Safety**: Check for proper protective gear and safe execution
+
+        Provide analysis in the same JSON format as the general prompt, but with fencing-specific details.
+        """
+    
+    def _get_martial_arts_analysis_prompt(self) -> str:
+        """Get martial arts-specific analysis prompt"""
+        return """
+        You are an expert martial arts instructor and biomechanics analyst. Analyze this martial arts image and provide detailed feedback on:
+
+        1. **Technique Identification**: Identify the specific martial arts technique
+        2. **Stance Analysis**: Evaluate proper stance, balance, and grounding
+        3. **Power Generation**: Assess hip rotation, weight transfer, and power delivery
+        4. **Defensive Position**: Analyze guard position and readiness
+        5. **Breathing**: Assess breathing pattern and relaxation
+        6. **Flow and Timing**: Evaluate movement flow and timing
+        7. **Traditional Form**: Assess adherence to traditional form principles
+
+        Provide analysis in the same JSON format as the general prompt, but with martial arts-specific details.
+        """
+    
+    def _get_combat_sports_analysis_prompt(self) -> str:
+        """Get combat sports-specific analysis prompt"""
+        return """
+        You are an expert combat sports coach and biomechanics specialist. Analyze this combat sports image and provide detailed feedback on:
+
+        1. **Technique Identification**: Identify the specific combat technique
+        2. **Stance and Balance**: Evaluate fighting stance and balance
+        3. **Power and Speed**: Assess power generation and speed of execution
+        4. **Defensive Awareness**: Analyze defensive positioning and awareness
+        5. **Range Management**: Evaluate proper distance and range control
+        6. **Tactical Positioning**: Assess strategic positioning and angles
+        7. **Safety and Control**: Check for safe execution and control
+
+        Provide analysis in the same JSON format as the general prompt, but with combat sports-specific details.
+        """
+    
+    def _get_detailed_analysis_prompt(self) -> str:
+        """Get detailed analysis prompt for comprehensive feedback"""
+        return """
+        You are a world-class sports biomechanics expert with decades of coaching experience. Analyze this sports image with extreme attention to detail and provide:
+
+        1. **Movement Identification**: Precisely identify the movement/technique with confidence level
+        2. **Form Quality Assessment**: Rate form quality (excellent/good/fair/poor) with detailed reasoning
+        3. **Posture Analysis**: Comprehensive analysis of body alignment, balance, and positioning
+        4. **Technique Feedback**: Specific, actionable feedback on execution quality
+        5. **Improvement Suggestions**: Detailed, step-by-step coaching advice
+        6. **Safety Assessment**: Thorough safety analysis and risk identification
+        7. **Biomechanical Analysis**: Detailed analysis of joint angles, muscle engagement, and movement efficiency
+        8. **Performance Optimization**: Suggestions for maximizing performance and efficiency
+
+        Provide your analysis in the following JSON format:
+        {
+            "movement_type": "string",
+            "confidence_score": 0.0-1.0,
+            "form_quality": "excellent|good|fair|poor",
+            "posture_analysis": {
+                "body_alignment": "string",
+                "balance": "string", 
+                "head_position": "string",
+                "spine_alignment": "string",
+                "limb_positions": "string"
+            },
+            "technique_feedback": ["string"],
+            "improvement_suggestions": ["string"],
+            "safety_concerns": ["string"],
+            "biomechanical_analysis": {
+                "joint_angles": "string",
+                "muscle_engagement": "string",
+                "movement_efficiency": "string",
+                "power_generation": "string"
+            },
+            "performance_notes": "string"
+        }
+        """
+    
     def encode_image(self, image_path: str) -> str:
         """Encode image to base64 for API transmission"""
         with open(image_path, "rb") as image_file:
