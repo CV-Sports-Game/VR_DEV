@@ -9,6 +9,10 @@ from pathlib import Path
 import logging
 from PIL import Image
 import io
+from dotenv import load_dotenv
+
+# Load environment variables
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
