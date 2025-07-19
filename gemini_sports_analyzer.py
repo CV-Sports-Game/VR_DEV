@@ -284,6 +284,134 @@ class GeminiSportsAnalyzer:
         except json.JSONDecodeError as e:
             logger.error(f"Failed to parse JSON response: {e}")
             return {}
+    
+    def analyze_movement_sequence(self, image_folder: str, sport_type: str = "detailed", max_images: int = 10) -> List[SportsAnalysis]:
+        """
+        Analyze multiple images in a folder
+        
+        Args:
+            image_folder: Path to folder containing images
+            sport_type: Type of sport for specialized analysis
+            max_images: Maximum number of images to analyze
+            
+        Returns:
+            List of SportsAnalysis objects
+        """
+        analyses = []
+        image_extensions = {'.jpg', '.jpeg', '.png', '.webp'}
+        
+        # Get list of image files
+        image_files = []
+        for file in os.listdir(image_folder):
+            if any(file.lower().endswith(ext) for ext in image_extensions):
+                image_files.append(os.path.join(image_folder, file))
+        
+        # Limit number of images
+        image_files = image_files[:max_images]
+        
+        print(f"🔍 Analyzing {len(image_files)} images in {image_folder}")
+        
+        for i, image_path in enumerate(image_files):
+            print(f"  [{i+1}/{len(image_files)}] Analyzing {os.path.basename(image_path)}...")
+            
+            try:
+                analysis = self.analyze_single_image(image_path, sport_type)
+                analyses.append(analysis)
+                
+                # Add delay to respect API rate limits
+                time.sleep(1)
+                
+            except Exception as e:
+                logger.error(f"Error analyzing {image_path}: {e}")
+                continue
+        
+        return analyses
+    
+    def generate_sequence_report(self, analyses: List[SportsAnalysis], movement_name: str) -> Dict[str, Any]:
+        """
+        Generate a comprehensive report from multiple analyses
+        
+        Args:
+            analyses: List of SportsAnalysis objects
+            movement_name: Name of the movement being analyzed
+            
+        Returns:
+            Dictionary containing aggregated analysis results
+        """
+        if not analyses:
+            return {"error": "No analyses provided"}
+        
+        # Aggregate results
+        movement_types = [a.movement_type for a in analyses if a.movement_type != "error"]
+        form_qualities = [a.form_quality for a in analyses if a.form_quality != "unknown"]
+        confidence_scores = [a.confidence_score for a in analyses if a.confidence_score > 0]
+        
+        # Calculate statistics
+        avg_confidence = sum(confidence_scores) / len(confidence_scores) if confidence_scores else 0
+        
+        # Most common movement type
+        from collections import Counter
+        movement_counter = Counter(movement_types)
+        most_common_movement = movement_counter.most_common(1)[0][0] if movement_counter else "unknown"
+        
+        # Form quality distribution
+        quality_counter = Counter(form_qualities)
+        
+        # Collect all feedback
+        all_technique_feedback = []
+        all_improvement_suggestions = []
+        all_safety_concerns = []
+        
+        for analysis in analyses:
+            all_technique_feedback.extend(analysis.technique_feedback)
+            all_improvement_suggestions.extend(analysis.improvement_suggestions)
+            all_safety_concerns.extend(analysis.safety_concerns)
+        
+        # Remove duplicates and get top suggestions
+        unique_technique_feedback = list(set(all_technique_feedback))[:5]
+        unique_improvement_suggestions = list(set(all_improvement_suggestions))[:5]
+        unique_safety_concerns = list(set(all_safety_concerns))[:3]
+        
+        return {
+            "movement_name": movement_name,
+            "total_images_analyzed": len(analyses),
+            "successful_analyses": len([a for a in analyses if a.movement_type != "error"]),
+            "primary_movement_type": most_common_movement,
+            "average_confidence": round(avg_confidence, 3),
+            "form_quality_distribution": dict(quality_counter),
+            "top_technique_feedback": unique_technique_feedback,
+            "top_improvement_suggestions": unique_improvement_suggestions,
+            "top_safety_concerns": unique_safety_concerns,
+            "individual_analyses": [
+                {
+                    "movement_type": a.movement_type,
+                    "confidence": a.confidence_score,
+                    "form_quality": a.form_quality,
+                    "technique_feedback": a.technique_feedback[:2],  # Top 2 feedback items
+                    "improvement_suggestions": a.improvement_suggestions[:2]  # Top 2 suggestions
+                }
+                for a in analyses
+            ]
+        }
+    
+    def save_analysis_report(self, report: Dict[str, Any], output_path: str):
+        """Save analysis report to JSON file"""
+        try:
+            with open(output_path, 'w') as f:
+                json.dump(report, f, indent=2)
+            print(f"✅ Analysis report saved to {output_path}")
+        except Exception as e:
+            logger.error(f"Error saving report: {e}")
+    
+    def print_analysis_summary(self, analysis: SportsAnalysis):
+        """Print a formatted summary of analysis results"""
+        print(f"\n📊 Analysis Summary:")
+        print(f"  Movement Type: {analysis.movement_type}")
+        print(f"  Confidence: {analysis.confidence_score:.2f}")
+        print(f"  Form Quality: {analysis.form_quality}")
+        print(f"  Technique Feedback: {len(analysis.technique_feedback)} items")
+        print(f"  Improvement Suggestions: {len(analysis.improvement_suggestions)} items")
+        print(f"  Safety Concerns: {len(analysis.safety_concerns)} items")
 
 def main():
     """Test the Gemini Sports Analyzer"""
