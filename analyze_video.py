@@ -11,12 +11,12 @@ class SportsAnalyzer:
     def __init__(self, model_path="image_model.pth", label_mapping=None):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
-        # Load the trained model
-        self.model = SimpleCNN(num_classes=16)  # 16 pose classes
+        
+        self.model = SimpleCNN(num_classes=16)  
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         self.model.eval()
         
-        # Label mapping (same as training)
+        
         self.label_mapping = label_mapping or {
             'fencing_footwork': 0, 'fencing_riposte': 1, 'boxing_uppercut': 2, 
             'fencing_slide': 3, 'fencing_en_garde': 4, 'boxing_hook': 5, 
@@ -26,16 +26,16 @@ class SportsAnalyzer:
             'boxing_guard': 15
         }
         
-        # Reverse mapping for readable output
-        self.reverse_mapping = {v: k for k, v in self.label_mapping.items()}
         
-        # Image transforms (same as training)
+        self.reverse_apping = {v: k for k, v in self.label_mapping.items()}
+        
+        
         self.transform = transforms.Compose([
             transforms.Resize((128, 128)),
             transforms.ToTensor(),
         ])
         
-        # Coaching feedback database
+        
         self.feedback_db = {
             'boxing_punch': {
                 'good': "Great punch form! Keep your guard up.",
