@@ -5,18 +5,19 @@ from torchvision import transforms
 from PIL import Image
 import cv2
 import numpy as np
+import argparse
 from train_model import SimpleCNN, ImagePoseDataset
 
 class SportsAnalyzer:
     def __init__(self, model_path="image_model.pth", label_mapping=None):
         self.device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         
-        
-        self.model = SimpleCNN(num_classes=16)  
+        # Load the trained model
+        self.model = SimpleCNN(num_classes=16)  # 16 pose classes
         self.model.load_state_dict(torch.load(model_path, map_location=self.device))
         self.model.eval()
         
-        
+        # Label mapping (same as training)
         self.label_mapping = label_mapping or {
             'fencing_footwork': 0, 'fencing_riposte': 1, 'boxing_uppercut': 2, 
             'fencing_slide': 3, 'fencing_en_garde': 4, 'boxing_hook': 5, 
@@ -26,16 +27,16 @@ class SportsAnalyzer:
             'boxing_guard': 15
         }
         
+        # Reverse mapping for readable output
+        self.reverse_mapping = {v: k for k, v in self.label_mapping.items()}
         
-        self.reverse_apping = {v: k for k, v in self.label_mapping.items()}
-        
-        
+        # Image transforms (same as training)
         self.transform = transforms.Compose([
             transforms.Resize((128, 128)),
             transforms.ToTensor(),
         ])
         
-        
+        # Coaching feedback database
         self.feedback_db = {
             'boxing_punch': {
                 'good': "Great punch form! Keep your guard up.",
@@ -85,9 +86,24 @@ class SportsAnalyzer:
         except Exception as e:
             return {'error': f"Analysis failed: {str(e)}"}
     
-    def analyze_video(self, video_path, sample_rate=30):
+    def analyze_video(self, video_path, sample_rate=30, show_progress=True):
         """Analyze video frames and provide feedback."""
+        if not os.path.exists(video_path):
+            return {'error': f"Video file not found: {video_path}"}
+        
         cap = cv2.VideoCapture(video_path)
+        if not cap.isOpened():
+            return {'error': f"Could not open video: {video_path}"}
+        
+        # Get video properties
+        total_frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
+        fps = cap.get(cv2.CAP_PROP_FPS)
+        duration = total_frames / fps if fps > 0 else 0
+        
+        print(f"📹 Video Analysis: {video_path}")
+        print(f"   Duration: {duration:.1f}s, FPS: {fps:.1f}, Total frames: {total_frames}")
+        print(f"   Sampling every {sample_rate} frames...")
+        
         frame_count = 0
         analyses = []
         
@@ -109,7 +125,15 @@ class SportsAnalyzer:
                 # Analyze the frame
                 analysis = self.analyze_image(temp_path)
                 analysis['frame'] = frame_count
+                analysis['timestamp'] = frame_count / fps if fps > 0 else 0
                 analyses.append(analysis)
+                
+                # Show progress
+                if show_progress:
+                    progress = (frame_count / total_frames) * 100
+                    pose = analysis.get('pose', 'unknown')
+                    confidence = analysis.get('confidence', 0)
+                    print(f"   Frame {frame_count}/{total_frames} ({progress:.1f}%) - {pose} ({confidence:.1%})")
                 
                 # Clean up temp file
                 os.remove(temp_path)
@@ -117,7 +141,18 @@ class SportsAnalyzer:
             frame_count += 1
         
         cap.release()
-        return analyses
+        
+        if analyses:
+            summary = self.get_summary(analyses)
+            return {
+                'analyses': analyses,
+                'summary': summary,
+                'total_frames': total_frames,
+                'analyzed_frames': len(analyses),
+                'duration': duration
+            }
+        else:
+            return {'error': "No frames were analyzed"}
     
     def generate_feedback(self, pose_name, confidence):
         """Generate coaching feedback based on pose and confidence."""
@@ -174,12 +209,32 @@ Most common pose: {most_common_pose[0]} ({most_common_pose[1]} times)
 Pose breakdown:
 """
         for pose, count in sorted(pose_counts.items()):
-            summary += f"  {pose}: {count} times\n"
+            percentage = (count / len(analyses)) * 100
+            summary += f"  {pose}: {count} times ({percentage:.1f}%)\n"
+        
+        # Add coaching recommendations
+        summary += "\n🎯 COACHING RECOMMENDATIONS:\n"
+        if avg_confidence < 0.6:
+            summary += "  • Overall confidence is low - focus on form fundamentals\n"
+        if len(pose_counts) < 3:
+            summary += "  • Limited pose variety - try different techniques\n"
+        if most_common_pose[1] > len(analyses) * 0.7:
+            summary += "  • Very repetitive - work on technique diversity\n"
         
         return summary
 
 def main():
-    """Main function to demonstrate the analyzer."""
+    """Main function with command line argument parsing."""
+    parser = argparse.ArgumentParser(description='VR Sports Analyzer - AI Coach')
+    parser.add_argument('--image', type=str, help='Path to image file to analyze')
+    parser.add_argument('--video', type=str, help='Path to video file to analyze')
+    parser.add_argument('--sample-rate', type=int, default=30, 
+                       help='Sample every N frames for video analysis (default: 30)')
+    parser.add_argument('--demo', action='store_true', 
+                       help='Run demo on test images')
+    
+    args = parser.parse_args()
+    
     analyzer = SportsAnalyzer()
     
     print("🎯 VR Sports Analyzer - AI Coach")
@@ -190,24 +245,62 @@ def main():
         print("❌ Model not found! Please train the model first using train_model.py")
         return
     
-    # Demo with test images if available
-    test_images = ["test_images/test_0.jpg", "test_images/test_1.jpg"]
-    
-    for img_path in test_images:
-        if os.path.exists(img_path):
-            print(f"\n📸 Analyzing: {img_path}")
-            result = analyzer.analyze_image(img_path)
-            
-            if 'error' in result:
-                print(f"❌ {result['error']}")
-            else:
-                print(f"🎯 {result['feedback']}")
+    # Handle different analysis modes
+    if args.image:
+        print(f"\n📸 Analyzing image: {args.image}")
+        result = analyzer.analyze_image(args.image)
+        
+        if 'error' in result:
+            print(f"❌ {result['error']}")
         else:
-            print(f"⚠️ Test image not found: {img_path}")
+            print(f"🎯 {result['feedback']}")
     
-    print("\n💡 To analyze your own images/videos:")
-    print("   python3 analyze_video.py --image path/to/image.jpg")
-    print("   python3 analyze_video.py --video path/to/video.mp4")
+    elif args.video:
+        print(f"\n📹 Analyzing video: {args.video}")
+        result = analyzer.analyze_video(args.video, args.sample_rate)
+        
+        if 'error' in result:
+            print(f"❌ {result['error']}")
+        else:
+            print(f"\n{result['summary']}")
+    
+    elif args.demo:
+        # Demo with test images
+        test_images = ["test_images/test_0.jpg", "test_images/test_1.jpg"]
+        
+        for img_path in test_images:
+            if os.path.exists(img_path):
+                print(f"\n📸 Analyzing: {img_path}")
+                result = analyzer.analyze_image(img_path)
+                
+                if 'error' in result:
+                    print(f"❌ {result['error']}")
+                else:
+                    print(f"🎯 {result['feedback']}")
+            else:
+                print(f"⚠️ Test image not found: {img_path}")
+    
+    else:
+        # Default demo
+        print("\n💡 Usage examples:")
+        print("   python3 analyze_video.py --image path/to/image.jpg")
+        print("   python3 analyze_video.py --video path/to/video.mp4")
+        print("   python3 analyze_video.py --demo")
+        print("\n📸 Running demo on test images...")
+        
+        test_images = ["test_images/test_0.jpg", "test_images/test_1.jpg"]
+        
+        for img_path in test_images:
+            if os.path.exists(img_path):
+                print(f"\n📸 Analyzing: {img_path}")
+                result = analyzer.analyze_image(img_path)
+                
+                if 'error' in result:
+                    print(f"❌ {result['error']}")
+                else:
+                    print(f"🎯 {result['feedback']}")
+            else:
+                print(f"⚠️ Test image not found: {img_path}")
 
 if __name__ == "__main__":
     main() 
