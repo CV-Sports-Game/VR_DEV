@@ -9,4 +9,5 @@ duckduckgo-search>=3.0.0
 mediapipe>=0.10.0
 scikit-learn>=1.0.0
 matplotlib>=3.5.0
-seaborn>=0.11.0 
+seaborn>=0.11.0
+google-cloud-storage>=2.0.0 
