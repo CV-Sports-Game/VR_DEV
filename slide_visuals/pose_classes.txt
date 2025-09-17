@@ -1,0 +1,27 @@
+🎯 Supported Pose Classes
+==============================
+
+
+BOXING:
+--------------------
+• Boxing Punch
+• Boxing Guard
+• Boxing Hook
+• Boxing Uppercut
+• Boxing Straight Punch
+• Boxing Fast Punch
+• Boxing Block
+• Boxing Footwork
+
+
+FENCING:
+--------------------
+• Fencing Lunge
+• Fencing Guard
+• Fencing Parry
+• Fencing En Garde
+• Fencing Slide
+• Fencing Riposte
+• Fencing Footwork
+• Fencing Block
+

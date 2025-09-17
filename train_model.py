@@ -51,86 +51,91 @@ class SimpleCNN(nn.Module):
         x = self.classifier(x)
         return x
 
-# --- Mode selection ---
-mode = input("Select mode: (1) Pose Sequence, (2) Image Classification: ").strip()
+def main():
+    """Interactive training entrypoint. Only runs when this file is executed directly."""
+    mode = input("Select mode: (1) Pose Sequence, (2) Image Classification: ").strip()
 
-if mode == '1':
-    # --- Pose Sequence Training (existing logic) ---
-    sequence_len = 30
-    pose_dir = "pose_data"
-    label_file = os.path.join(pose_dir, "labels.csv")
-    dataset = PoseSequenceDataset(pose_dir, label_file, sequence_len)
-    print("Label mapping:", dataset.label_map)
-    num_classes = len(dataset.label_map)
-    loader = DataLoader(dataset, batch_size=32, shuffle=True)
-    model = PoseTransformer(input_dim=99, model_dim=128, num_classes=num_classes, seq_len=sequence_len)
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    criterion = nn.CrossEntropyLoss()
-    print("Training on pose sequences...")
-    for epoch in range(50):
-        total_loss = 0
-        model.train()
-        for x_batch, y_batch in loader:
-            optimizer.zero_grad()
-            output = model(x_batch)
-            loss = criterion(output, y_batch)
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
-        avg_loss = total_loss / len(loader)
-        print(f"Epoch {epoch+1}/50, Loss: {avg_loss:.4f}")
-    torch.save(model.state_dict(), "pose_model.pth")
-    print("Model trained and saved as 'pose_model.pth'")
-    print("Label Mapping:", dataset.label_map)
-    # Evaluation
-    model.eval()
-    with torch.no_grad():
-        for i in range(10):
-            x, y_true = dataset[i]
-            x = x.unsqueeze(0)
-            y_pred = model(x)
-            predicted_label = torch.argmax(y_pred, dim=1).item()
-            reverse_map = {v: k for k, v in dataset.label_map.items()}
-            print(f"Sample {i}: True = {reverse_map[y_true.item()]}, Predicted = {reverse_map[predicted_label]}")
+    if mode == '1':
+        # --- Pose Sequence Training (existing logic) ---
+        sequence_len = 30
+        pose_dir = "pose_data"
+        label_file = os.path.join(pose_dir, "labels.csv")
+        dataset = PoseSequenceDataset(pose_dir, label_file, sequence_len)
+        print("Label mapping:", dataset.label_map)
+        num_classes = len(dataset.label_map)
+        loader = DataLoader(dataset, batch_size=32, shuffle=True)
+        model = PoseTransformer(input_dim=99, model_dim=128, num_classes=num_classes, seq_len=sequence_len)
+        optimizer = optim.Adam(model.parameters(), lr=1e-3)
+        criterion = nn.CrossEntropyLoss()
+        print("Training on pose sequences...")
+        for epoch in range(50):
+            total_loss = 0
+            model.train()
+            for x_batch, y_batch in loader:
+                optimizer.zero_grad()
+                output = model(x_batch)
+                loss = criterion(output, y_batch)
+                loss.backward()
+                optimizer.step()
+                total_loss += loss.item()
+            avg_loss = total_loss / len(loader)
+            print(f"Epoch {epoch+1}/50, Loss: {avg_loss:.4f}")
+        torch.save(model.state_dict(), "pose_model.pth")
+        print("Model trained and saved as 'pose_model.pth'")
+        print("Label Mapping:", dataset.label_map)
+        # Evaluation
+        model.eval()
+        with torch.no_grad():
+            for i in range(10):
+                x, y_true = dataset[i]
+                x = x.unsqueeze(0)
+                y_pred = model(x)
+                predicted_label = torch.argmax(y_pred, dim=1).item()
+                reverse_map = {v: k for k, v in dataset.label_map.items()}
+                print(f"Sample {i}: True = {reverse_map[y_true.item()]}, Predicted = {reverse_map[predicted_label]}")
 
-elif mode == '2':
-    # --- Image Classification Training ---
-    images_dir = "images"
-    label_file = os.path.join(images_dir, "image_labels.csv")
-    dataset = ImagePoseDataset(images_dir, label_file)
-    print("Label mapping:", dataset.label_map)
-    num_classes = len(dataset.label_map)
-    loader = DataLoader(dataset, batch_size=32, shuffle=True)
-    model = SimpleCNN(num_classes=num_classes)
-    optimizer = optim.Adam(model.parameters(), lr=1e-3)
-    criterion = nn.CrossEntropyLoss()
-    print("Training on images...")
-    for epoch in range(20):
-        total_loss = 0
-        model.train()
-        for x_batch, y_batch in loader:
-            optimizer.zero_grad()
-            output = model(x_batch)
-            loss = criterion(output, y_batch)
-            loss.backward()
-            optimizer.step()
-            total_loss += loss.item()
-        avg_loss = total_loss / len(loader)
-        print(f"Epoch {epoch+1}/20, Loss: {avg_loss:.4f}")
-    torch.save(model.state_dict(), "image_model.pth")
-    print("Image model trained and saved as 'image_model.pth'")
-    print("Label Mapping:", dataset.label_map)
-    # Evaluation
-    model.eval()
-    with torch.no_grad():
-        for i in range(10):
-            x, y_true = dataset[i]
-            x = x.unsqueeze(0)
-            y_pred = model(x)
-            predicted_label = torch.argmax(y_pred, dim=1).item()
-            reverse_map = {v: k for k, v in dataset.label_map.items()}
-            print(f"Sample {i}: True = {reverse_map[y_true]}, Predicted = {reverse_map[predicted_label]}")
-else:
-    print("Invalid mode selected. Exiting.")
+    elif mode == '2':
+        # --- Image Classification Training ---
+        images_dir = "images"
+        label_file = os.path.join(images_dir, "image_labels.csv")
+        dataset = ImagePoseDataset(images_dir, label_file)
+        print("Label mapping:", dataset.label_map)
+        num_classes = len(dataset.label_map)
+        loader = DataLoader(dataset, batch_size=32, shuffle=True)
+        model = SimpleCNN(num_classes=num_classes)
+        optimizer = optim.Adam(model.parameters(), lr=1e-3)
+        criterion = nn.CrossEntropyLoss()
+        print("Training on images...")
+        for epoch in range(20):
+            total_loss = 0
+            model.train()
+            for x_batch, y_batch in loader:
+                optimizer.zero_grad()
+                output = model(x_batch)
+                loss = criterion(output, y_batch)
+                loss.backward()
+                optimizer.step()
+                total_loss += loss.item()
+            avg_loss = total_loss / len(loader)
+            print(f"Epoch {epoch+1}/20, Loss: {avg_loss:.4f}")
+        torch.save(model.state_dict(), "image_model.pth")
+        print("Image model trained and saved as 'image_model.pth'")
+        print("Label Mapping:", dataset.label_map)
+        # Evaluation
+        model.eval()
+        with torch.no_grad():
+            for i in range(10):
+                x, y_true = dataset[i]
+                x = x.unsqueeze(0)
+                y_pred = model(x)
+                predicted_label = torch.argmax(y_pred, dim=1).item()
+                reverse_map = {v: k for k, v in dataset.label_map.items()}
+                print(f"Sample {i}: True = {reverse_map[y_true]}, Predicted = {reverse_map[predicted_label]}")
+    else:
+        print("Invalid mode selected. Exiting.")
+
+
+if __name__ == "__main__":
+    main()
 
 
