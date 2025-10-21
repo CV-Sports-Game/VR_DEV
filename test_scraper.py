@@ -24,7 +24,7 @@ def download_image(url, filepath):
 
 def test_scrape():
     """Test scraping with just one query"""
-    print("🧪 Testing image scraper...")
+    print(" Testing image scraper...")
     
     # Create test folder
     test_folder = "test_images"
@@ -42,12 +42,12 @@ def test_scrape():
                 
                 print(f"Downloading {filename}...")
                 if download_image(image_url, filepath):
-                    print(f"✅ Downloaded {filename}")
+                    print(f" Downloaded {filename}")
                 else:
-                    print(f"❌ Failed to download {filename}")
+                    print(f" Failed to download {filename}")
                 
         except Exception as e:
-            print(f"❌ Error: {e}")
+            print(f"Error: {e}")
 
 if __name__ == "__main__":
     test_scrape() 
