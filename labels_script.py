@@ -15,7 +15,7 @@ for f in pose_files:
         label = parts[0]  # 'parry', 'thrust', etc.
         rows.append((f, label))
     else:
-        print(f"⚠️ Skipped: {f} (unrecognized format)")
+        print(f" Skipped: {f} (unrecognized format)")
 
 # Write to CSV
 with open(output_csv, "w", newline="") as csvfile:
@@ -23,7 +23,7 @@ with open(output_csv, "w", newline="") as csvfile:
     writer.writerow(["filename", "label"])
     writer.writerows(rows)
 
-print(f"✅ Generated {len(rows)} labeled entries in {output_csv}")
+print(f" Generated {len(rows)} labeled entries in {output_csv}")
 
 # --- New: Generate image_labels.csv for images/ directory ---
 
@@ -41,7 +41,7 @@ def generate_image_labels(images_dir="images", output_csv="images/image_labels.c
         writer = csv.writer(csvfile)
         writer.writerow(["filename", "label"])
         writer.writerows(image_rows)
-    print(f"✅ Generated {len(image_rows)} labeled entries in {output_csv}")
+    print(f" Generated {len(image_rows)} labeled entries in {output_csv}")
 
 # Run the new function
 generate_image_labels()

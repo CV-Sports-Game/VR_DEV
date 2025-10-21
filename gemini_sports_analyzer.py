@@ -23,7 +23,7 @@ class SportsAnalysis:
     """Data class for storing sports analysis results"""
     movement_type: str
     confidence_score: float
-    form_quality: str  # "excellent", "good", "fair", "poor"
+    form_quality: str  
     posture_analysis: Dict[str, Any]
     technique_feedback: List[str]
     improvement_suggestions: List[str]

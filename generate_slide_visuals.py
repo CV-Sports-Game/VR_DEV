@@ -156,7 +156,7 @@ NEXT STEPS:
 def main():
     """Main function."""
     if not os.path.exists("image_model.pth"):
-        print("❌ Model not found! Please train the model first using train_model.py")
+        print(" Model not found! Please train the model first using train_model.py")
         return
     
     create_slide_visuals()

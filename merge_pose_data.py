@@ -13,6 +13,6 @@ for file in os.listdir(pose_dir):
 if all_data:
     merged = np.concatenate(all_data, axis=0)
     np.save(os.path.join(pose_dir, "pose_sequences.npy"), merged)
-    print(f"✅ Combined {len(all_data)} files into pose_sequences.npy with shape {merged.shape}")
+    print(f" Combined {len(all_data)} files into pose_sequences.npy with shape {merged.shape}")
 else:
-    print("🚨 No pose data found to merge.")
+    print(" No pose data found to merge.")
