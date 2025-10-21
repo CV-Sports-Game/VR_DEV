@@ -1,6 +1,7 @@
 # 🎯 VR Sports Analysis - AI Coach
+Project by: Vrishan, Adhya, Aditya
 
-An AI-powered sports analysis system that provides real-time feedback on boxing and fencing techniques. Built for VR integration and automated coaching.
+An AI-powered sports analysis system that provides real-time feedback on boxing and fencing techniques. Built for VR integration and automated coaching(VR aspect work-in-progress).
 
 ## 🚀 What This Project Does
 
