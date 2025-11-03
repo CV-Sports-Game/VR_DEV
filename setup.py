@@ -52,7 +52,7 @@ def main():
         sys.exit(1)
     
     # Verify installation
-    print("🔄 Verifying installation...")
+    print(" Verifying installation...")
     test_cmd = "source .venv/bin/activate && python3 -c \"import torch, cv2, PIL; print('✅ Core dependencies verified')\""
     if run_command(test_cmd, "Verifying core dependencies"):
         print(" Setup completed successfully!")
