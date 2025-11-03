@@ -1,8 +1,9 @@
-# 🎯 VR Sports Analysis - AI Coach
+#  VR Sports Analysis - AI Coach
+Project by: Vrishan, Adhya, Aditya
 
-An AI-powered sports analysis system that provides real-time feedback on boxing and fencing techniques. Built for VR integration and automated coaching.
+An AI-powered sports analysis system that provides real-time feedback on boxing and fencing techniques. Built for VR integration and automated coaching(VR aspect work-in-progress).
 
-## 🚀 What This Project Does
+##  What This Project Does
 
 ### **Core Features:**
 - **AI Pose Recognition**: Automatically detects boxing and fencing poses from images/videos
@@ -20,7 +21,7 @@ An AI-powered sports analysis system that provides real-time feedback on boxing 
 - Foundation for VR games with AI opponents
 - Automated sports technique assessment
 
-## 🛠️ Installation Guide
+##  Installation Guide
 
 ### **Quick Install (Recommended)**
 ```bash
@@ -49,7 +50,7 @@ pip install -r requirements.txt
 - 4GB+ RAM (for model training)
 - Webcam (for real-time analysis)
 
-## 🎮 How to Use
+##  How to Use
 
 ### **1. Train the Model**
 ```bash
@@ -78,7 +79,7 @@ python3 analyze_video.py --video path/to/your/video.mp4
 python3 analyze_video.py --video video.mp4 --sample-rate 15
 ```
 
-## 🤖 How the Model Works
+##  How the Model Works
 
 ### **Architecture:**
 - **CNN Model**: Simple convolutional neural network for image classification
@@ -97,7 +98,7 @@ python3 analyze_video.py --video video.mp4 --sample-rate 15
 - **Speed**: Real-time capable (30+ FPS)
 - **Classes**: 16 different boxing/fencing poses
 
-## 📁 Project Structure
+##  Project Structure
 
 ```
 VR_DEV/
@@ -115,22 +116,22 @@ VR_DEV/
 └── install.sh            # Quick installer
 ```
 
-## 🎯 MVP Features
+##  MVP Features
 
 ### **Current Capabilities:**
-- ✅ Image and video analysis
-- ✅ Real-time pose detection
-- ✅ Coaching feedback generation
-- ✅ Command-line interface
-- ✅ Model training pipeline
+-  Image and video analysis
+-  Real-time pose detection
+-  Coaching feedback generation
+-  Command-line interface
+- Model training pipeline
 
 ### **Coming Soon:**
-- 🔄 Webcam real-time analysis
-- 🔄 Unity VR integration
-- 🔄 AI opponent system
-- 🔄 Progress tracking
+-  Webcam real-time analysis
+-  Unity VR integration
+-  AI opponent system
+-  Progress tracking
 
-## 🚀 Future Vision
+##  Future Vision
 
 ### **VR Integration:**
 - Real-time feedback in VR headsets
@@ -144,19 +145,11 @@ VR_DEV/
 - Personalized training plans
 - Multi-player VR competitions
 
-## 🤝 Contributing
-
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
-4. Test thoroughly
-5. Submit a pull request
-
-## 📄 License
+##  License
 
 This project is licensed under the MIT License - see the LICENSE file for details.
 
-## 🆘 Troubleshooting
+##  Troubleshooting
 
 ### **Common Issues:**
 
@@ -179,14 +172,4 @@ pip install -r requirements.txt
 python3 analyze_video.py --video video.mp4 --sample-rate 60
 ```
 
-## 📞 Support
-
-For issues or questions:
-- Create an issue on GitHub
-- Check the troubleshooting section above
-- Review the project documentation
-
----
-
-**Built with ❤️ for the future of VR sports training**
 
